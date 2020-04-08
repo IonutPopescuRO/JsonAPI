@@ -1,5 +1,5 @@
 import flask
-from flask import jsonify, render_template
+from flask import request, jsonify, render_template
 from functions import *
 
 app = flask.Flask(__name__)
@@ -15,42 +15,28 @@ def home():
 
 
 @app.route('/api/', methods=['GET'])
-@app.route('/api/<int:limit>/', methods=['GET'])
-@app.route('/api/<int:limit>/<string:order_by>/', methods=['GET'])
-@app.route('/api/<int:limit>/<string:order_by>/<string:order>/', methods=['GET'])
-@app.route('/api/<string:order_by>/', methods=['GET'])
-@app.route('/api/<string:order_by>/<string:order>/', methods=['GET'])
-def simple_api(action=None, limit=None, order_by=None, order=None):
-    errors = []
-    products = get_json()
-    result = result_limit(products, limit)
-    result = sort_result(result, order_by, order, allowed_columns, errors)
+def api():
+    search = request.args.get('search', default=None, type=str)
+    columns = request.args.get('columns', default=None, type=str)
+    limit = request.args.get('limit', default=None, type=int)
+    order_by = request.args.get('order_by', default=None, type=str)
+    order = request.args.get('order', default=None, type=str)
 
-    if len(errors):
-        return jsonify(errors)
-    return jsonify(result)
-
-
-@app.route('/api/search/<string:search>/', methods=['GET'])
-@app.route('/api/search/<string:search>/<string:columns>/', methods=['GET'])
-@app.route('/api/search/<string:search>/<string:columns>/<string:order_by>/', methods=['GET'])
-@app.route('/api/search/<string:search>/<string:columns>/<string:order_by>/<string:order>/', methods=['GET'])
-@app.route('/api/search/<string:search>/<string:columns>/<int:limit>/', methods=['GET'])
-@app.route('/api/search/<string:search>/<string:columns>/<int:limit>/<string:order_by>/<string:order>/',
-           methods=['GET'])
-@app.route('/api/search/<string:search>/<string:columns>/<int:limit>/<string:order_by>/', methods=['GET'])
-def api(columns=None, search=None, limit=None, order_by=None, order=None):
-    result = errors = []
+    result = api_errors = []
     if limit == 0:
         return jsonify(result)
+
     products = get_json()
 
-    parsed_columns = parse_columns(columns, allowed_columns, errors)
-    result = search_in_json(products, search, parsed_columns, limit)
-    result = sort_result(result, order_by, order, allowed_columns, errors)
+    parsed_columns = parse_columns(columns, allowed_columns, api_errors)
+    if search is not None:
+        result = search_in_json(products, search, parsed_columns, limit)
+    else:
+        result = result_limit(products, limit)
+    result = sort_result(result, order_by, order, allowed_columns, api_errors)
 
-    if len(errors):
-        return jsonify(errors)
+    if len(api_errors):
+        return jsonify(api_errors)
     return jsonify(result)
 
 

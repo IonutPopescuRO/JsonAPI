@@ -32,14 +32,15 @@ def sort_result(result, order_by, order, allowed_columns, errors):
     if order_by is not None and order_by in allowed_columns:
         if order_by == "ratings":
             result.sort(
-                key=lambda product: (sum((product[order_by] is not None, 0)) / len((product[order_by] is not None, 0))))
+                key=lambda product: sum((product[order_by] is not None, 0))/len((product[order_by] is not None, 0)), reverse=True)
+            result.reverse()
         else:
             result.sort(key=lambda product: product[order_by])
-
-        if order is not None and order.lower() == "desc":
-            result.reverse()
     elif order_by is not None:
         errors.append({"error": 1, "description": "Unknown column: " + str(order_by)})
+
+    if order is not None and order.lower() == "desc":
+        result.reverse()
     return result
 
 
