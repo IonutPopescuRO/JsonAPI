@@ -19,9 +19,21 @@ def home():
 
 
 @app.route('/api/', methods=['GET'])
-def api():
+@app.route('/api/<int:limit>/', methods=['GET'])
+@app.route('/api/<int:limit>/<string:order_by>/<string:order>/', methods=['GET'])
+@app.route('/api/<string:action>/<int:limit>/', methods=['GET'])
+@app.route('/api/<string:action>/<string:columns>', methods=['GET'])
+@app.route('/api/<string:action>/<string:columns>/<string:search>/', methods=['GET'])
+@app.route('/api/<string:action>/<string:columns>/<string:search>/<string:order_by>/<string:order>/', methods=['GET'])
+@app.route('/api/<string:action>/<string:columns>/<string:search>/<int:limit>/', methods=['GET'])
+@app.route('/api/<string:action>/<string:columns>/<string:search>/<int:limit>/<string:order_by>/<string:order>/', methods=['GET'])
+def api(action=None, columns=None, search=None, limit=None, order_by=None, order=None):
     products = get_json()
-    return jsonify(products)
+    result = []
+
+    #if action is None:
+    #    result = products
+    return jsonify(result)
 
 
 app.run(port=8080)
