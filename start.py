@@ -1,52 +1,12 @@
 import flask
 from flask import jsonify, render_template
-import json
+from functions import *
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
 allowed_columns = ['id', 'maker', 'img', 'url', 'title', 'description']
-
-
-def get_json():
-    data = None
-    with open('db/products.json') as json_file:
-        data = json.load(json_file)
-    return data
-
-
-def search_in_json(products, search=None, columns=None, limit2=None):
-    result = []
-
-    limit = len(products)
-    if limit2 is not None:
-        if limit2 < limit:
-            limit = limit2
-
-    for product in products:
-        for key, value in product.items():
-            if key in columns and search in str(value).lower():
-                result.append(product)
-                if len(result) >= limit:
-                    return result
-                break
-
-    return result
-
-
-def sort_result(result, order_by=None, order=None):
-    if order_by is not None and order_by in allowed_columns:
-        rev = False
-
-        if order_by == "ratings":
-            result.sort(key=lambda product: (sum((product[order_by] is not None, 0))/len((product[order_by] is not None, 0))))
-        else:
-            result.sort(key=lambda product: product[order_by])
-
-        if order is not None and order.lower() == "desc":
-            result.reverse()
-
-    return result
+errors = []
 
 
 @app.route('/', methods=['GET'])
@@ -61,20 +21,13 @@ def home():
 @app.route('/api/<string:order_by>/', methods=['GET'])
 @app.route('/api/<string:order_by>/<string:order>/', methods=['GET'])
 def simple_api(action=None, limit=None, order_by=None, order=None):
+    errors = []
     products = get_json()
-    result = []
+    result = result_limit(products, limit)
+    result = sort_result(result, order_by, order, allowed_columns, errors)
 
-    if limit is None:
-        result = products
-    else:
-        if limit > len(products):
-            limit = len(products)
-        result = products[:limit]
-
-    allowed_columns.append('ratings')
-    if order_by is not None and order_by in allowed_columns:
-        result = sort_result(result, order_by, order)
-
+    if len(errors):
+        return jsonify(errors)
     return jsonify(result)
 
 
@@ -87,24 +40,17 @@ def simple_api(action=None, limit=None, order_by=None, order=None):
            methods=['GET'])
 @app.route('/api/search/<string:search>/<string:columns>/<int:limit>/<string:order_by>/', methods=['GET'])
 def api(columns=None, search=None, limit=None, order_by=None, order=None):
-    result = []
+    result = errors = []
     if limit == 0:
         return jsonify(result)
     products = get_json()
-    parsed_columns = allowed_columns
 
-    if columns is not None:
-        if ',' in columns:
-            parsed_columns = str.split(',')
-        else:
-            parsed_columns = [columns]
-
+    parsed_columns = parse_columns(columns, allowed_columns, errors)
     result = search_in_json(products, search, parsed_columns, limit)
+    result = sort_result(result, order_by, order, allowed_columns, errors)
 
-    allowed_columns.append('ratings')
-    if order_by is not None and order_by in allowed_columns:
-        result = sort_result(result, order_by, order)
-
+    if len(errors):
+        return jsonify(errors)
     return jsonify(result)
 
 
