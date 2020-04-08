@@ -1,5 +1,5 @@
 import flask
-from flask import jsonify
+from flask import jsonify, render_template
 import json
 
 app = flask.Flask(__name__)
@@ -15,11 +15,10 @@ def get_json():
 
 @app.route('/', methods=['GET'])
 def home():
-    products = get_json()
-    return jsonify(products)
+    return render_template('index.html')
 
 
-@app.route('/api', methods=['GET'])
+@app.route('/api/', methods=['GET'])
 def api():
     products = get_json()
     return jsonify(products)
