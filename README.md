@@ -2,6 +2,7 @@
 
 Tema:
 > Dezvoltati un API ce interactioneaza cu un fisier de tip JSON
+
 > D1-T2 | Dezvoltare API.
 
 # Cerinte minimale:
