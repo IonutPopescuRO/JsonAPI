@@ -11,7 +11,8 @@ errors = []
 
 @app.route('/', methods=['GET'])
 def home():
-    return render_template('index.html')
+    status = {"name": "JsonAPI", "version": "v1.0", "status": 1}
+    return render_template('index.html', status=str(status))
 
 
 @app.route('/api/', methods=['GET'])

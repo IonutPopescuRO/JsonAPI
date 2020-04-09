@@ -27,7 +27,7 @@
 									<div class="form-group">
 										<div class="input-group input-test">
 											<div class="input-group-addon">{{ request.base_url }}api/</div>
-											<input type="text" class="form-control" id="exampleInputAmount" placeholder="search/title/NAME" value="search/title/Cactus">
+											<input type="text" class="form-control" name="parameters" id="parameters" placeholder="?search=NAME&column=title" value="?search=cactus&column=title">
 										</div>
 									</div>
 									<div class="form-group">
@@ -38,7 +38,7 @@
 								</form>
 							</div>
 						</div>
-						<pre class="language-json" id="response"><code class="language-json" id="response-content">{"name":"JsonAPI","version":"v1.0","status":1}</code></pre>
+						<pre class="language-json" id="response"><code class="language-json" id="response-content">{{ status }}</code></pre>
 					</div>
 				</div>
 			</div>
@@ -52,12 +52,10 @@
 					event.preventDefault();
 					var post_url = $(this).attr("action");
 					var request_method = $(this).attr("method");
-					var form_data = $(this).serialize();
-					
+					var parameters = $("#parameters").val();
 					$.ajax({
-						url : post_url,
-						type: request_method,
-						data : form_data
+						url : post_url+parameters,
+						type: request_method
 					}).done(function(response) {
 						$("#response").css("display", "block");
 						$("#response-content").html(JSON.stringify(response, null, '\t'));
