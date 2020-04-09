@@ -30,17 +30,14 @@ def search_in_json(products, search, columns, limit2):
 def sort_result(result, order_by, order, allowed_columns, errors):
     allowed_columns.append('ratings')
     if order_by is not None and order_by in allowed_columns:
-        if order_by == "ratings":
-            result.sort(
-                key=lambda product: sum((product[order_by] is not None, 0))/len((product[order_by] is not None, 0)), reverse=True)
-            result.reverse()
-        else:
-            result.sort(key=lambda product: product[order_by])
+        desc = False
+
+        if order is not None and order.lower() == "desc":
+            desc = True
+        result.sort(key=lambda product: sum(product[order_by]) / len(product[order_by]) if product[order_by] is not None else 0, reverse=desc)
     elif order_by is not None:
         errors.append({"error": 1, "description": "Unknown column: " + str(order_by)})
 
-    if order is not None and order.lower() == "desc":
-        result.reverse()
     return result
 
 
