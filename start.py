@@ -28,6 +28,8 @@ def api():
         return jsonify(result)
 
     products = get_json()
+    if columns is not None:
+        columns.replace(" ", "")
 
     parsed_columns = parse_columns(columns, allowed_columns, api_errors)
     if search is not None:
