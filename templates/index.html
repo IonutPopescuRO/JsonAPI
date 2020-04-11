@@ -36,6 +36,93 @@
 										</center>
 									</div>
 								</form>
+								<div class="panel-group" role="tablist">
+									<div class="panel panel-default">
+										<div class="panel-heading" role="tab" id="collapseListGroupHeadingAPI">
+											<h4 class="panel-title">
+										  <a class="collapsed" role="button" data-toggle="collapse" href="#collapseListAPI" aria-expanded="false" aria-controls="collapseListAPI">
+											Parametrii API disponibili
+										  </a>
+										</h4>
+										</div>
+										<div id="collapseListAPI" class="panel-collapse collapse" role="tabpanel" aria-labelledby="collapseListGroupHeadingAPI" aria-expanded="false" style="height: 0px;">
+											<ul class="list-group">
+												<li class="list-group-item">
+													<table class="table table-hover api-parameters">
+														<thead>
+															<tr>
+																<th>Parametru</th>
+																<th>Valoare implicită</th>
+																<th>Tipul valorii</th>
+																<th>Descriere</th>
+															</tr>
+														</thead>
+														<tbody>
+															<tr>
+																<th scope="row">?action=</th>
+																<td><kbd>search</kbd></td>
+																<td>search | delete | add</td>
+																<td>Acțiunea pentru care API-ul este accesat.</td>
+															</tr>
+														</tbody>
+													</table>
+												</li>
+												<li class="list-group-item">
+													<p class="api-p">Parametrii pentru <kbd>?action=search</kbd>:</p>
+													<table class="table table-hover api-parameters">
+														<thead>
+															<tr>
+																<th>Parametru</th>
+																<th>Valoare implicită</th>
+																<th>Tipul valorii</th>
+																<th class="col-md-4">Descriere</th>
+															</tr>
+														</thead>
+														<tbody>
+															<tr>
+																<th scope="row">?search=</th>
+																<td><kbd>NULL</kbd></td>
+																<td>String</td>
+																<td>Un cuvânt care să fie căutat.</td>
+															</tr>
+															<tr>
+																<th scope="row">?columns=</th>
+																<td><kbd>Toate coloanele</kbd></td>
+																<td>id | maker | img | url | title | description</td>
+																<td>Coloanele în care se dorește căutarea cuvântului. Pentru a folosi mai multe, se va folosi delimitatorul <kbd>,</kbd>.</td>
+															</tr>
+															<tr>
+																<th scope="row">?limit=</th>
+																<td><kbd>NULL</kbd></td>
+																<td>INT</td>
+																<td>Maximul de rezultate care vor fi afișate.</td>
+															</tr>
+															<tr>
+																<th scope="row">?order_by=</th>
+																<td><kbd>NULL</kbd></td>
+																<td>id | maker | img | url | title | description | ratings</td>
+																<td>Coloana după care se vor ordona rezultatele.</td>
+															</tr>
+															<tr>
+																<th scope="row">?order=</th>
+																<td><kbd>asc</kbd></td>
+																<td>asc | desc</td>
+																<td>Ordonarea rezultatelor, crescător sau descrescător.</td>
+															</tr>
+														</tbody>
+													</table>
+												
+												
+												</li>
+											</ul>
+											<div class="panel-footer">
+												<a class="collapsed" role="button" data-toggle="collapse" href="#collapseListAPI" aria-expanded="false" aria-controls="collapseListAPI">
+													Închide
+												</a>
+											</div>
+										</div>
+									</div>
+								</div>
 							</div>
 						</div>
 						<pre class="language-json" id="response"><code class="language-json" id="response-content">{{ status }}</code></pre>
@@ -43,8 +130,9 @@
 				</div>
 			</div>
 		</div>
-		
+
         <script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
 		
 		<script>
 			$(document).ready(function() {
