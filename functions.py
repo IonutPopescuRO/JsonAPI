@@ -1,10 +1,20 @@
 import json
+import pathlib
 
 
 def get_json():
-    data = None
-    with open('db/products.json') as json_file:
-        data = json.load(json_file)
+    data = []
+    for path in pathlib.Path("db").iterdir():
+        if path.is_file():
+            with open(path) as json_file:
+                try:
+                    print(path)
+                    new_data = json.load(json_file)
+                    data.extend(new_data)
+                except ValueError as e:
+                    print('invalid json: %s' % e)
+                    #return None  # or: raise
+
     return data
 
 
