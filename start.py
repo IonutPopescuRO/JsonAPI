@@ -4,6 +4,7 @@ from flask import request, jsonify, render_template
 from flask_mail import Mail, Message
 
 from functions import *
+from sqlite import *
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True

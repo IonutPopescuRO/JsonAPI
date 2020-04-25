@@ -1,15 +1,16 @@
 import json
 import pathlib
+import random
+import string
 from threading import Thread
 
 
 def get_json():
     data = []
-    for path in pathlib.Path("db").iterdir():
+    for path in pathlib.Path("db").rglob('*.json'):
         if path.is_file():
             with open(path) as json_file:
                 try:
-                    print(path)
                     new_data = json.load(json_file)
                     data.extend(new_data)
                 except ValueError as e:
@@ -83,4 +84,8 @@ def parse_columns(columns, allowed_columns, errors):
         errors.append({"error": 1, "description": "Unknown columns: "+str(not_found)})
         parsed_columns = []
     return parsed_columns
+
+
+def get_new_key():
+    return ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
 
