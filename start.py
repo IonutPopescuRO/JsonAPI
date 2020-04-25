@@ -21,7 +21,7 @@ errors = []
 
 @app.route('/', methods=['GET'])
 def home():
-    msg = Message("Subject", recipients=['ionutpopescu10@yahoo.com'])
+    msg = Message("Subject", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']), recipients=['ionutpopescu10@yahoo.com'])
     #msg.body = "You have received a new feedback from {} <{}>.".format(name, email)
     msg.html = "<p>Mail body</p>"
     #mail.send(msg)
