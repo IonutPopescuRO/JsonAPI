@@ -8,7 +8,7 @@ from functions import *
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
 
-app.config['MAIL_SERVER'] = '54.36.167.79'
+app.config['MAIL_SERVER'] = 'mail.ionut.work'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = app.config['MAIL_DEFAULT_SENDER'] = 'json_api@ionut.work'
@@ -24,7 +24,7 @@ def home():
     msg = Message("Subject", recipients=['ionutpopescu10@yahoo.com'])
     #msg.body = "You have received a new feedback from {} <{}>.".format(name, email)
     msg.html = "<p>Mail body</p>"
-    mail.send(msg)
+    #mail.send(msg)
     status = {"name": "JsonAPI", "version": "v1.0", "status": 1}
     return render_template('index.html', status=str(status))
 
