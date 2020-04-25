@@ -1,11 +1,19 @@
 import flask
 import requests
 from flask import request, jsonify, render_template
+from flask_mail import Mail, Message
 
 from functions import *
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
+
+app.config['MAIL_SERVER'] = '54.36.167.79'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = app.config['MAIL_DEFAULT_SENDER'] = 'json_api@ionut.work'
+app.config['MAIL_PASSWORD'] = 'xiVkWNlWog'
+mail = Mail(app)
 
 allowed_columns = ['id', 'maker', 'img', 'url', 'title', 'description']
 errors = []
@@ -13,6 +21,10 @@ errors = []
 
 @app.route('/', methods=['GET'])
 def home():
+    msg = Message("Subject", recipients=['ionutpopescu10@yahoo.com'])
+    #msg.body = "You have received a new feedback from {} <{}>.".format(name, email)
+    msg.html = "<p>Mail body</p>"
+    mail.send(msg)
     status = {"name": "JsonAPI", "version": "v1.0", "status": 1}
     return render_template('index.html', status=str(status))
 
@@ -45,8 +57,8 @@ def api():
     return jsonify(result)
 
 
-@app.route('/api/admin/', methods=['GET'])
-def external_api():
+@app.route('/api/admin/update/movies/<int:pages>/', methods=['GET'])
+def external_api(pages=1):
     response = None
     new_json = []
 
@@ -59,7 +71,7 @@ def external_api():
     movies = json.loads(result)['results']
 
     for movie in movies:
-        new_movie = {"id": movie['id'], "maker": "themoviedb", "img": "https://image.tmdb.org/t/p/w600_and_h900_bestv2/"+str(movie['poster_path']), "url": "https://www.themoviedb.org/movie/"+str(movie['id']), "title": movie['title'], "description": movie['overview'], "ratings": [float(movie['vote_average'])]}
+        new_movie = {"id": movie['id'], "maker": "themoviedb", "img": "https://image.tmdb.org/t/p/w600_and_h900_bestv2/"+str(movie['poster_path']), "url": "https://www.themoviedb.org/movie/"+str(movie['id']), "title": movie['title'], "description": movie['overview'], "ratings": [float(movie['vote_average'])/2]}
         new_json.append(new_movie)
     with open('db/movies.json', 'w') as outfile:
         json.dump(new_json, outfile, indent=4)
