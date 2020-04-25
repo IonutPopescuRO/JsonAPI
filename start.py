@@ -1,6 +1,8 @@
 import flask
 import requests
 from flask import request, jsonify, render_template
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_mail import Mail, Message
 
 from functions import *
@@ -15,6 +17,11 @@ app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = app.config['MAIL_DEFAULT_SENDER'] = 'json_api@ionut.work'
 app.config['MAIL_PASSWORD'] = 'xiVkWNlWog'
 mail = Mail(app)
+
+limiter = Limiter(
+    app,
+    key_func=get_remote_address
+)
 
 allowed_columns = ['id', 'maker', 'img', 'url', 'title', 'description']
 errors = []
@@ -31,6 +38,7 @@ def home():
 
 
 @app.route('/api/', methods=['GET'])
+@limiter.limit("50 per hour")
 def api():
     search = request.args.get('search', default=None, type=str)
     columns = request.args.get('columns', default=None, type=str)
@@ -78,6 +86,11 @@ def external_api(pages=1):
         json.dump(new_json, outfile, indent=4)
 
     return jsonify(movies)
+
+
+@app.errorhandler(429)
+def resource_not_found(e):
+    return jsonify(error=str(e)), 429
 
 
 app.run(port=8080)
