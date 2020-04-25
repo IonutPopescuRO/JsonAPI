@@ -2,7 +2,9 @@ import json
 import pathlib
 import random
 import string
-from threading import Thread
+
+from flask import request
+from flask_limiter.util import get_remote_address
 
 
 def get_json():
@@ -88,4 +90,20 @@ def parse_columns(columns, allowed_columns, errors):
 
 def get_new_key():
     return ''.join(random.choices(string.ascii_lowercase + string.digits, k=32))
+
+
+def get_rate_limit():
+    key = request.args.get('key', default=None, type=str)
+    if key == '123':
+        return "6 per minute"
+    print(key)
+    #return "50 per hour"
+    return "4 per minute"
+
+
+def get_key_func():
+    key = request.args.get('key', default=None, type=str)
+    if key == '123':
+        return '123'
+    return get_remote_address
 

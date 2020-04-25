@@ -2,7 +2,6 @@ import flask
 import requests
 from flask import request, jsonify, render_template
 from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 from flask_mail import Mail, Message
 
 from functions import *
@@ -18,10 +17,7 @@ app.config['MAIL_USERNAME'] = app.config['MAIL_DEFAULT_SENDER'] = 'json_api@ionu
 app.config['MAIL_PASSWORD'] = 'xiVkWNlWog'
 mail = Mail(app)
 
-limiter = Limiter(
-    app,
-    key_func=get_remote_address
-)
+limiter = Limiter(app, key_func=get_remote_address)
 
 allowed_columns = ['id', 'maker', 'img', 'url', 'title', 'description']
 errors = []
@@ -29,16 +25,17 @@ errors = []
 
 @app.route('/', methods=['GET'])
 def home():
-    msg = Message("Subject", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']), recipients=['ionutpopescu10@yahoo.com'])
-    #msg.body = "You have received a new feedback from {} <{}>.".format(name, email)
+    msg = Message("Subject", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']),
+                  recipients=['ionutpopescu10@yahoo.com'])
+    # msg.body = "You have received a new feedback from {} <{}>.".format(name, email)
     msg.html = "<p>Mail body</p>"
-    #mail.send(msg)
+    # mail.send(msg)
     status = {"name": "JsonAPI", "version": "v1.0", "status": 1}
     return render_template('index.html', status=str(status))
 
 
 @app.route('/api/', methods=['GET'])
-@limiter.limit("50 per hour")
+@limiter.limit(get_rate_limit, key_func=get_key_func)
 def api():
     search = request.args.get('search', default=None, type=str)
     columns = request.args.get('columns', default=None, type=str)
@@ -80,7 +77,10 @@ def external_api(pages=1):
     movies = json.loads(result)['results']
 
     for movie in movies:
-        new_movie = {"id": movie['id'], "maker": "themoviedb", "img": "https://image.tmdb.org/t/p/w600_and_h900_bestv2/"+str(movie['poster_path']), "url": "https://www.themoviedb.org/movie/"+str(movie['id']), "title": movie['title'], "description": movie['overview'], "ratings": [float(movie['vote_average'])/2]}
+        new_movie = {"id": movie['id'], "maker": "themoviedb",
+                     "img": "https://image.tmdb.org/t/p/w600_and_h900_bestv2/" + str(movie['poster_path']),
+                     "url": "https://www.themoviedb.org/movie/" + str(movie['id']), "title": movie['title'],
+                     "description": movie['overview'], "ratings": [float(movie['vote_average']) / 2]}
         new_json.append(new_movie)
     with open('db/movies.json', 'w') as outfile:
         json.dump(new_json, outfile, indent=4)
