@@ -1,6 +1,12 @@
+"""
+Resurse:
+https://programminghistorian.org/en/lessons/creating-apis-with-python-and-flask
+https://flask-limiter.readthedocs.io/en/stable/
+https://pythonhosted.org/Flask-Mail/
+"""
 import flask
 import requests
-from flask import request, jsonify, render_template
+from flask import jsonify, render_template
 from flask_limiter import Limiter
 from flask_mail import Mail, Message
 
@@ -9,7 +15,7 @@ from sqlite import *
 
 app = flask.Flask(__name__)
 app.config["DEBUG"] = True
-
+# Configuratie SMTP pentru trimiterea unui mail (contul de email va fi accesibil pe parcursul proiectului)
 app.config['MAIL_SERVER'] = 'mail.ionut.work'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -19,7 +25,8 @@ mail = Mail(app)
 
 limiter = Limiter(app, key_func=get_remote_address)
 
-allowed_columns = ['id', 'maker', 'img', 'url', 'title', 'description']
+allowed_columns = ['id', 'maker', 'img', 'url', 'title',
+                   'description']  # coloanele care vor fi permise pentru cautare si sortare
 errors = []
 
 
@@ -30,7 +37,7 @@ def home():
     # msg.body = "You have received a new feedback from {} <{}>.".format(name, email)
     msg.html = "<p>Mail body</p>"
     # mail.send(msg)
-    status = {"name": "JsonAPI", "version": "v1.0", "status": 1}
+    status = {"name": "JsonAPI", "version": "v1.0", "status": 1}  # un status demo
     return render_template('index.html', status=str(status))
 
 
@@ -44,30 +51,30 @@ def api():
     order = request.args.get('order', default=None, type=str)
 
     result = api_errors = []
-    if limit == 0:
+    if limit == 0:  # daca limita impusa este 0, nu mai are rost sa continuam
         return jsonify(result)
 
     products = get_json()
     if columns is not None:
         columns.replace(" ", "")
 
-    parsed_columns = parse_columns(columns, allowed_columns, api_errors)
+    parsed_columns = parse_columns(columns, allowed_columns, api_errors)  # impunem coloanele in care se cauta
     if search is not None:
         result = search_in_json(products, search, parsed_columns, limit)
     else:
-        result = result_limit(products, limit)
+        result = result_limit(products, limit) # daca nu se cauta dupa ceva anume, doar limitam rezultatele
     result = sort_result(result, order_by, order, allowed_columns, api_errors)
 
-    if len(api_errors):
+    if len(api_errors): # daca am avut erori pe parcrusul executiei, le returnam
         return jsonify(api_errors)
     return jsonify(result)
 
 
-@app.route('/api/admin/update/movies/<int:pages>/', methods=['GET'])
+@app.route('/api/admin/update/movies/<int:pages>/', methods=['GET']) # ruta adaugata pentru a imbogati json-ul
 def external_api(pages=1):
     response = None
     new_json = []
-
+    # am ales al intamplare un api ce ofera recomandari de filme
     uri = "https://api.themoviedb.org/3/movie/top_rated?api_key=99e36b0bf3d6511077ee228f91e71dd5&language=ro&region=RO"
     try:
         response = requests.get(uri)
@@ -80,7 +87,7 @@ def external_api(pages=1):
         new_movie = {"id": movie['id'], "maker": "themoviedb",
                      "img": "https://image.tmdb.org/t/p/w600_and_h900_bestv2/" + str(movie['poster_path']),
                      "url": "https://www.themoviedb.org/movie/" + str(movie['id']), "title": movie['title'],
-                     "description": movie['overview'], "ratings": [float(movie['vote_average']) / 2]}
+                     "description": movie['overview'], "ratings": [float(movie['vote_average']) / 2]} # formatam totul folosind coloanele noastre
         new_json.append(new_movie)
     with open('db/movies.json', 'w') as outfile:
         json.dump(new_json, outfile, indent=4)
@@ -88,7 +95,7 @@ def external_api(pages=1):
     return jsonify(movies)
 
 
-@app.errorhandler(429)
+@app.errorhandler(429)  # afisam eroarea produsa de rate limiting in format json
 def resource_not_found(e):
     return jsonify(error=str(e)), 429
 

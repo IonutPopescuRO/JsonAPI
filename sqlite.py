@@ -17,7 +17,7 @@ def sqlite_connection():
 
 def insert_user(conn, email):
     key = get_new_key()
-    while check_key(conn, key):
+    while check_key(conn, key): # in cazul in care cheia este deja folosita, generam altele pana cand dam de una nefolosita
         key = get_new_key()
 
     sql = 'INSERT INTO users(key, email) VALUES(?, ?)'
