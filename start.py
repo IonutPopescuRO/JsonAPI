@@ -3,26 +3,21 @@ Resurse:
 https://programminghistorian.org/en/lessons/creating-apis-with-python-and-flask
 https://flask-limiter.readthedocs.io/en/stable/
 https://pythonhosted.org/Flask-Mail/
+https://github.com/Rev0kz/Flask-Google
 """
 import flask
 import requests
-from flask import jsonify, render_template
+from flask import jsonify, render_template, flash
 from flask_limiter import Limiter
 from flask_mail import Mail, Message
 
+from config import RegisterForm
 from functions import *
-from sqlite import *
 
 app = flask.Flask(__name__)
-app.config["DEBUG"] = True
-# Configuratie SMTP pentru trimiterea unui mail (contul de email va fi accesibil pe parcursul proiectului)
-app.config['MAIL_SERVER'] = 'mail.ionut.work'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = app.config['MAIL_DEFAULT_SENDER'] = 'json_api@ionut.work'
-app.config['MAIL_PASSWORD'] = 'xiVkWNlWog'
-mail = Mail(app)
+app.config.from_object("config.Config")  # Folosim o clasa pentru configurarea Flask
 
+mail = Mail(app)
 limiter = Limiter(app, key_func=get_remote_address)
 
 allowed_columns = ['id', 'maker', 'img', 'url', 'title',
@@ -62,15 +57,15 @@ def api():
     if search is not None:
         result = search_in_json(products, search, parsed_columns, limit)
     else:
-        result = result_limit(products, limit) # daca nu se cauta dupa ceva anume, doar limitam rezultatele
+        result = result_limit(products, limit)  # daca nu se cauta dupa ceva anume, doar limitam rezultatele
     result = sort_result(result, order_by, order, allowed_columns, api_errors)
 
-    if len(api_errors): # daca am avut erori pe parcrusul executiei, le returnam
+    if len(api_errors):  # daca am avut erori pe parcrusul executiei, le returnam
         return jsonify(api_errors)
     return jsonify(result)
 
 
-@app.route('/api/admin/update/movies/<int:pages>/', methods=['GET']) # ruta adaugata pentru a imbogati json-ul
+@app.route('/api/admin/update/movies/<int:pages>/', methods=['GET'])  # ruta adaugata pentru a imbogati json-ul
 def external_api(pages=1):
     response = None
     new_json = []
@@ -87,12 +82,23 @@ def external_api(pages=1):
         new_movie = {"id": movie['id'], "maker": "themoviedb",
                      "img": "https://image.tmdb.org/t/p/w600_and_h900_bestv2/" + str(movie['poster_path']),
                      "url": "https://www.themoviedb.org/movie/" + str(movie['id']), "title": movie['title'],
-                     "description": movie['overview'], "ratings": [float(movie['vote_average']) / 2]} # formatam totul folosind coloanele noastre
+                     "description": movie['overview'],
+                     "ratings": [float(movie['vote_average']) / 2]}  # formatam totul folosind coloanele noastre
         new_json.append(new_movie)
     with open('db/movies.json', 'w') as outfile:
         json.dump(new_json, outfile, indent=4)
 
     return jsonify(movies)
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    flash('Sending your message...')
+    if form.validate_on_submit():
+        return 'the form has been submitted. Success!'
+
+    return render_template("register.html", form=form)
 
 
 @app.errorhandler(429)  # afisam eroarea produsa de rate limiting in format json
