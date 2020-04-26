@@ -3,11 +3,11 @@ Resurse:
 https://programminghistorian.org/en/lessons/creating-apis-with-python-and-flask
 https://flask-limiter.readthedocs.io/en/stable/
 https://pythonhosted.org/Flask-Mail/
-https://github.com/Rev0kz/Flask-Google
+https://dev.to/mikecase/flask-wtf-recaptcha-not-working-26ml
 """
 import flask
 import requests
-from flask import jsonify, render_template, flash
+from flask import jsonify, render_template
 from flask_limiter import Limiter
 from flask_mail import Mail, Message
 
@@ -94,9 +94,8 @@ def external_api(pages=1):
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = RegisterForm()
-    flash('Sending your message...')
     if form.validate_on_submit():
-        return 'the form has been submitted. Success!'
+        return render_template("register.html", form=form, message='test', alert='success')
 
     return render_template("register.html", form=form)
 

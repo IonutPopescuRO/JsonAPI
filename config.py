@@ -1,4 +1,4 @@
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, Recaptcha
 from flask_wtf.recaptcha import RecaptchaField
 from wtforms import StringField, SubmitField, validators
 from wtforms.validators import Email, InputRequired
@@ -26,9 +26,9 @@ class Config(object):
 class RegisterForm(FlaskForm):
     email = StringField(
         'Email Address', validators=[
-            Email("Invalid E-mail Address"),
-            InputRequired("This field is required.")
+            Email("Adresă de email nu este corectă. Încearcă din nou."),
+            InputRequired("Acest câmp este obligatoriu.")
             ])
 
-    recaptcha = RecaptchaField("Are you real?")
-    submit = SubmitField('Generează-mi un key')
+    recaptcha = RecaptchaField(validators=[Recaptcha(message="Cod captcha invalid! Încearcă din nou.")])
+    submit = SubmitField('Generează o cheie de acces')
