@@ -134,6 +134,7 @@ def insert_user(conn, email):
     sql = 'INSERT INTO users(key, email) VALUES(?, ?)'
     cur = conn.cursor()
     cur.execute(sql, (key, email))
+    conn.commit()
 
     return key
 
@@ -167,3 +168,12 @@ def check_key(conn, key):
     if row is None:
         return False
     return True
+
+
+def get_key_by_email(conn, email):
+    sql = 'SELECT key FROM users WHERE email = ? LIMIT 1'
+    cur = conn.cursor()
+    cur.execute(sql, (email,))
+    record = cur.fetchone()
+
+    return record[0]

@@ -29,11 +29,6 @@ errors = []
 
 @app.route('/', methods=['GET'])
 def home():
-    msg = Message("Subject", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']),
-                  recipients=['ionutpopescu10@yahoo.com'])
-    # msg.body = "You have received a new feedback from {} <{}>.".format(name, email)
-    msg.html = "<p>Mail body</p>"
-    # mail.send(msg)
     status = {"name": "JsonAPI", "version": "v1.0", "status": 1}  # un status demo
     return render_template('index.html', status=str(status))
 
@@ -70,7 +65,7 @@ def api():
         return Response(
             jsonify(result).get_data(as_text=True),
             mimetype="application/json",
-            headers={"Content-disposition": "attachment; filename="+ str(int(time.time()) )+".json"})
+            headers={"Content-disposition": "attachment; filename=" + str(int(time.time())) + ".json"})
 
     return jsonify(result)
 
@@ -105,7 +100,34 @@ def external_api(pages=1):
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
-        return render_template("register.html", form=form, message='test', alert='success')
+        alert = 'danger'
+        email = form.email.data
+        conn = sqlite_connection()
+
+        if 'recover' in request.form.keys():  # verificam daca s-a cerut recuperarea cheii
+            if not check_email(conn, email):
+                alert = 'info'
+                message = "Succes! Ți-am trimis un email cu cheia de acces."
+                key = get_key_by_email(conn, email)
+                msg = Message("Recuperare cheie de acces JsonAPI", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']), recipients=[email])
+                msg.html = "<p>Salut! Primești acest email pentru că ai cerut o cheie de acces pentru " \
+                           "JsonAPI.<br>Cheia " \
+                           "ta de acces este: <b>{}</b></p>".format(key)
+                mail.send(msg)
+            else:
+                message = "Acest email nu se află în baza de date."
+        elif check_email(conn, email):  # verificam daca emailul a mai fost folosit
+            alert = 'success'
+            key = insert_user(conn, email)  # inseram key-ul si il si salvamm pentru a-l trimite prin email
+            msg = Message("Cheie de acces JsonAPI", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']), recipients=[email])
+            msg.html = "<p>Salut! Primești acest email pentru că ai cerut o cheie de acces pentru JsonAPI.<br>Cheia " \
+                       "ta de acces este: <b>{}</b></p>".format(key)
+            mail.send(msg)
+            message = "Succes! Cheia de acces a fost creată! Ți-am trimis un email cu cheia de acces."
+        else:
+            message = "Adresa de email {} a mai fost utilizată.".format(email)
+        return render_template("register.html", form=form, message=message, alert=alert)  # in cazul in care s-a
+        # postat formularul, afisam rezultatele
 
     return render_template("register.html", form=form)
 

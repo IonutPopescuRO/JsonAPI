@@ -32,3 +32,4 @@ class RegisterForm(FlaskForm):
 
     recaptcha = RecaptchaField(validators=[Recaptcha(message="Cod captcha invalid! Încearcă din nou.")])
     submit = SubmitField('Generează o cheie de acces')
+    recover = SubmitField('Recuperare cheie de acces')
