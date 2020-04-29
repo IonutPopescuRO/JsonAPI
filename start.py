@@ -5,9 +5,11 @@ https://flask-limiter.readthedocs.io/en/stable/
 https://pythonhosted.org/Flask-Mail/
 https://dev.to/mikecase/flask-wtf-recaptcha-not-working-26ml
 """
+import time
+
 import flask
 import requests
-from flask import jsonify, render_template
+from flask import jsonify, render_template, Response
 from flask_limiter import Limiter
 from flask_mail import Mail, Message
 
@@ -44,6 +46,7 @@ def api():
     limit = request.args.get('limit', default=None, type=int)
     order_by = request.args.get('order_by', default=None, type=str)
     order = request.args.get('order', default=None, type=str)
+    download = request.args.get('download', default=0, type=int)
 
     result = api_errors = []
     if limit == 0:  # daca limita impusa este 0, nu mai are rost sa continuam
@@ -62,6 +65,13 @@ def api():
 
     if len(api_errors):  # daca am avut erori pe parcrusul executiei, le returnam
         return jsonify(api_errors)
+
+    if download > 0:  # daca se doreste descarcarea rezultatului
+        return Response(
+            jsonify(result).get_data(as_text=True),
+            mimetype="application/json",
+            headers={"Content-disposition": "attachment; filename="+ str(int(time.time()) )+".json"})
+
     return jsonify(result)
 
 
