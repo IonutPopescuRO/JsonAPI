@@ -43,7 +43,19 @@ def api():
     order = request.args.get('order', default=None, type=str)
     download = request.args.get('download', default=0, type=int)
 
+    key = request.args.get('key', default=None, type=str)
+    key_search = request.args.get('key_search', default=0, type=int)
+
     result = api_errors = []
+
+    if key is not None:  # verificare key
+        conn = sqlite_connection()
+        if not check_key(conn, key):
+            result.append({"error": 2, "description": "Invalid API key: You must be granted a valid key."})
+            return jsonify(result)
+    elif key_search != 0:  # daca nu e folosit un key, ne asiguram ca key_search este 0
+        key_search = 0
+
     if limit == 0:  # daca limita impusa este 0, nu mai are rost sa continuam
         return jsonify(result)
 
@@ -109,7 +121,8 @@ def register():
                 alert = 'info'
                 message = "Succes! Ți-am trimis un email cu cheia de acces."
                 key = get_key_by_email(conn, email)
-                msg = Message("Recuperare cheie de acces JsonAPI", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']), recipients=[email])
+                msg = Message("Recuperare cheie de acces JsonAPI",
+                              sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']), recipients=[email])
                 msg.html = "<p>Salut! Primești acest email pentru că ai cerut o cheie de acces pentru " \
                            "JsonAPI.<br>Cheia " \
                            "ta de acces este: <b>{}</b></p>".format(key)
@@ -119,7 +132,9 @@ def register():
         elif check_email(conn, email):  # verificam daca emailul a mai fost folosit
             alert = 'success'
             key = insert_user(conn, email)  # inseram key-ul si il si salvamm pentru a-l trimite prin email
-            msg = Message("Cheie de acces JsonAPI", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']), recipients=[email])
+            create_json_file(key) # crearea propiului json
+            msg = Message("Cheie de acces JsonAPI", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']),
+                          recipients=[email])
             msg.html = "<p>Salut! Primești acest email pentru că ai cerut o cheie de acces pentru JsonAPI.<br>Cheia " \
                        "ta de acces este: <b>{}</b></p>".format(key)
             mail.send(msg)

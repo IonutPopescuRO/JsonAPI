@@ -177,3 +177,9 @@ def get_key_by_email(conn, email):
     record = cur.fetchone()
 
     return record[0]
+
+
+def create_json_file(key):
+    users = pathlib.Path("db/users")
+    with open(os.path.join(users, key+'.json'), 'w') as outfile:
+        json.dump([], outfile)
