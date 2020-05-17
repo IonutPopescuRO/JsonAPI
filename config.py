@@ -5,7 +5,7 @@ from wtforms.validators import Email, InputRequired
 
 
 class Config(object):
-    DEBUG = True
+    DEBUG = False
     JSON_AS_ASCII = False
     
     SECRET_KEY = 'jsonapi2020'
