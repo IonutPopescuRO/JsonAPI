@@ -1,3 +1,4 @@
+import datetime
 import json
 import os
 import pathlib
@@ -216,6 +217,13 @@ def get_user_info(conn, key):
 
     record = cur.fetchone()
     return record
+
+
+def update_last_use(conn, key):
+    sql = 'UPDATE users SET last_use = ? WHERE key = ?'
+    cur = conn.cursor()
+    cur.execute(sql, (datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), key))
+    conn.commit()
 
 
 def create_json_file(key):

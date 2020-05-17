@@ -67,6 +67,9 @@ def api():
         result.append({"error": 3, "description": "Acțiunea nu este validă."})
         return jsonify(result)
 
+    if use_key and action != 'user':
+        update_last_use(conn, key)
+
     if action == 'search':
         if limit == 0:  # daca limita impusa este 0, nu mai are rost sa continuam
             return jsonify(result)
@@ -125,7 +128,7 @@ def api():
                    "img": img,
                    "url": url,
                    "description": description,
-                   "ratings": ratings}
+                   "ratings": parsed_ratings}
         new_id = insert_in_json(key, new_row)
 
         result = {"error": 0, "success": 1, "description": "Datele au fost inserate cu succes. ID: " + str(new_id)}
