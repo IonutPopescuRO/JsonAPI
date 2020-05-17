@@ -22,7 +22,6 @@ def get_json(key, mode):
                 continue
             with open(path) as json_file:
                 try:
-                    print(path)
                     new_data = json.load(json_file)
                     data.extend(new_data)
                 except ValueError as e:  # daca gasim fisier cu format json invalid
