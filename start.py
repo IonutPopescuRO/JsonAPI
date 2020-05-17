@@ -24,7 +24,6 @@ limiter = Limiter(app, key_func=get_remote_address)
 
 allowed_columns = ['id', 'maker', 'img', 'url', 'title',
                    'description']  # coloanele care vor fi permise pentru cautare si sortare
-errors = []
 
 
 @app.route('/', methods=['GET'])
@@ -61,7 +60,7 @@ def api():
         mode = 0
 
     if mode not in [0, 1, 2]:
-        result.append({"error": 4, "description": "Modul de căutare nu există."})
+        result.append({"error": 5, "description": "Modul de căutare nu există."})
         return jsonify(result)
 
     if action not in ['search', 'add', 'delete']:  # verificam daca actiunea exista
@@ -102,6 +101,25 @@ def api():
         title = request.args.get('title', default=None, type=str)
         description = request.args.get('description', default=None, type=str)
         ratings = request.args.get('ratings', default=None, type=str)
+        parsed_ratings = None
+
+        if img is None or not check_url(img):
+            api_errors.append({"error": 6, "description": "Parametrul img trebuie să fie un link valid."})
+        elif url is None or not check_url(url):
+            api_errors.append({"error": 7, "description": "Parametrul img trebuie să fie un link valid."})
+        elif title is None:
+            api_errors.append({"error": 8, "description": "Parametrul title este obligatoriu."})
+        elif ratings is not None and ratings!="":  # verificam ratings doar daca au fost transmise
+            ratings.replace(" ", "")
+            if ',' in ratings:
+                parsed_ratings = ratings.split(',')
+            else:
+                parsed_ratings = [ratings]
+            for x in parsed_ratings:
+                if not isfloat(x):
+                    api_errors.append({"error": 9, "description": "Valoarea "+x+" din ratings nu este un float."})
+        if len(api_errors):
+            jsonify(api_errors)
 
     return jsonify(result)
 

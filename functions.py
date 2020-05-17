@@ -211,3 +211,13 @@ def check_url(link):  # django url validation regex
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
 
     return re.match(regex, link) is not None
+
+
+def isfloat(value):
+    if value == "NaN":  # in python "NaN" este considerat float
+        return False
+    try:
+        float(value)
+        return True
+    except ValueError:
+        return False
