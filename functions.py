@@ -221,3 +221,15 @@ def isfloat(value):
         return True
     except ValueError:
         return False
+
+
+def insert_json(key, content):
+    users = pathlib.Path("db/users")
+    with open(os.path.join(users, key + '.json'), 'r+') as file:
+        data = json.load(file)
+        content["id"] = 0 if len(data) == 0 else data[-1]['id'] + 1  # un nou id
+        data.append(content)
+        file.seek(0)  # resetam pointerul fisierului deschis
+        json.dump(data, file)
+
+    return content["id"]

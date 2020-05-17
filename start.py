@@ -109,7 +109,7 @@ def api():
             api_errors.append({"error": 7, "description": "Parametrul img trebuie să fie un link valid."})
         elif title is None:
             api_errors.append({"error": 8, "description": "Parametrul title este obligatoriu."})
-        elif ratings is not None and ratings!="":  # verificam ratings doar daca au fost transmise
+        elif ratings is not None and ratings != "":  # verificam ratings doar daca au fost transmise
             ratings.replace(" ", "")
             if ',' in ratings:
                 parsed_ratings = ratings.split(',')
@@ -117,9 +117,18 @@ def api():
                 parsed_ratings = [ratings]
             for x in parsed_ratings:
                 if not isfloat(x):
-                    api_errors.append({"error": 9, "description": "Valoarea "+x+" din ratings nu este un float."})
+                    api_errors.append({"error": 9, "description": "Valoarea '" + x + "' din ratings nu este un float."})
         if len(api_errors):
             jsonify(api_errors)
+
+        new_row = {"id": 0, "maker": maker,
+                   "img": img,
+                   "url": url,
+                   "description": description,
+                   "ratings": ratings}
+        new_id = insert_json(key, new_row)
+
+        result = {"error": 0, "success": 1, "description": "Datele au fost inserate cu succes. ID: "+str(new_id)}
 
     return jsonify(result)
 
