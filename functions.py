@@ -207,6 +207,17 @@ def get_limited_by_key(conn, key):
     return True if record[0] == 1 else False
 
 
+def get_user_info(conn, key):
+    if conn is None:
+        conn = sqlite_connection()
+    sql = 'SELECT email, limited, last_use, create_time FROM users WHERE key = ? LIMIT 1'
+    cur = conn.cursor()
+    cur.execute(sql, (key,))
+
+    record = cur.fetchone()
+    return record
+
+
 def create_json_file(key):
     users = pathlib.Path("db/users")
     with open(os.path.join(users, key + '.json'), 'w') as outfile:

@@ -63,7 +63,7 @@ def api():
         result.append({"error": 5, "description": "Modul de căutare nu există."})
         return jsonify(result)
 
-    if action not in ['search', 'add', 'delete']:  # verificam daca actiunea exista
+    if action not in ['search', 'add', 'delete', 'user']:  # verificam daca actiunea exista
         result.append({"error": 3, "description": "Acțiunea nu este validă."})
         return jsonify(result)
 
@@ -128,7 +128,7 @@ def api():
                    "ratings": ratings}
         new_id = insert_in_json(key, new_row)
 
-        result = {"error": 0, "success": 1, "description": "Datele au fost inserate cu succes. ID: "+str(new_id)}
+        result = {"error": 0, "success": 1, "description": "Datele au fost inserate cu succes. ID: " + str(new_id)}
     elif action == 'delete':
         id = request.args.get('id', default=None, type=int)
         if not use_key:
@@ -139,11 +139,14 @@ def api():
             return jsonify(result)
         x = delete_in_json(key, id)
         if x:
-            result = {"error": 0, "success": 1, "description": "Înregistrarea cu id-ul "+str(id)+" a fost ștearsă."}
+            result = {"error": 0, "success": 1, "description": "Înregistrarea cu id-ul " + str(id) + " a fost ștearsă."}
         else:
-            result = {"error": 11, "description": "Nu există o înregistrare cu id-ul "+str(id)+"."}
-
-
+            result = {"error": 11, "description": "Nu există o înregistrare cu id-ul " + str(id) + "."}
+    elif action == 'user':
+        if key is None:
+            result = {"error": 12, "description": "Variabila key este obligatorie."}
+        info = get_user_info(conn, key)
+        result = {"email": info[0], "limited": info[1], "last_use": info[2], "create_time": info[3]}
     return jsonify(result)
 
 
