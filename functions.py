@@ -115,8 +115,11 @@ def get_rate_limit():  # transmitem limitele impuse api-ului, difera daca se ofe
 def get_key_func():  # transmitem pe ce criteriu se fac limitarile ( default: pe ip )
     if request.remote_addr == '127.0.0.1':  # nu limitam daca sunt requesturi locale
         return None
+    conn = sqlite_connection()
     key = request.args.get('key', default=None, type=str)
-    if check_key(None, key):  # daca cheia exista, o folosim ca si criteriu de limitare
+    if check_key(conn, key):  # daca cheia exista, o folosim ca si criteriu de limitare
+        if not get_limited_by_key(conn, key):
+            return None  # daca userul nu este limitat in db nu aplicam restrictii
         return key
     return get_remote_address
 
@@ -193,6 +196,15 @@ def get_email_by_key(conn, key):
     record = cur.fetchone()
 
     return record[0]
+
+
+def get_limited_by_key(conn, key):
+    sql = 'SELECT limited FROM users WHERE key = ? LIMIT 1'
+    cur = conn.cursor()
+    cur.execute(sql, (key,))
+    record = cur.fetchone()
+
+    return True if record[0] == 1 else False
 
 
 def create_json_file(key):
