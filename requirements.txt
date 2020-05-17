@@ -16,7 +16,6 @@ limits==1.5.1
 MarkupSafe==1.1.1
 python-http-client==3.2.7
 requests==2.23.0
-sendgrid==6.2.2
 six==1.14.0
 urllib3==1.25.8
 Werkzeug==1.0.1
