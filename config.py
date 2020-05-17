@@ -6,7 +6,8 @@ from wtforms.validators import Email, InputRequired
 
 class Config(object):
     DEBUG = True
-
+    JSON_AS_ASCII = False
+    
     SECRET_KEY = 'jsonapi2020'
 
     # Configuratie SMTP pentru trimiterea unui mail (contul de email va fi accesibil pe parcursul proiectului)

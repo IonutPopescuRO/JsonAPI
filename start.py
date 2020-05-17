@@ -36,6 +36,8 @@ def home():
 @app.route('/api/', methods=['GET'])
 @limiter.limit(get_rate_limit, key_func=get_key_func)
 def api():
+    action = request.args.get('action', default='search', type=str)
+
     search = request.args.get('search', default=None, type=str)
     columns = request.args.get('columns', default=None, type=str)
     limit = request.args.get('limit', default=None, type=int)
@@ -44,40 +46,60 @@ def api():
     download = request.args.get('download', default=0, type=int)
 
     key = request.args.get('key', default=None, type=str)
-    key_search = request.args.get('key_search', default=0, type=int)
-
+    mode = request.args.get('mode', default=0, type=int)
+    use_key = False
     result = api_errors = []
 
     if key is not None:  # verificare key
         conn = sqlite_connection()
         if not check_key(conn, key):
-            result.append({"error": 2, "description": "Invalid API key: You must be granted a valid key."})
+            result.append({"error": 2, "description": "Invalid API key: Trebuie să folosești o cheie de acces validă."})
             return jsonify(result)
-    elif key_search != 0:  # daca nu e folosit un key, ne asiguram ca key_search este 0
-        key_search = 0
+        else:
+            use_key = True
+    elif mode != 0:  # daca nu e folosit un key, ne asiguram ca mode este 0
+        mode = 0
 
-    if limit == 0:  # daca limita impusa este 0, nu mai are rost sa continuam
+    if action not in ['search', 'add', 'delete']:  # verificam daca actiunea exista
+        result.append({"error": 3, "description": "Acțiunea nu este validă."})
         return jsonify(result)
 
-    products = get_json()
-    if columns is not None:
-        columns.replace(" ", "")
+    if action == 'search':
+        if limit == 0:  # daca limita impusa este 0, nu mai are rost sa continuam
+            return jsonify(result)
 
-    parsed_columns = parse_columns(columns, allowed_columns, api_errors)  # impunem coloanele in care se cauta
-    if search is not None:
-        result = search_in_json(products, search, parsed_columns, limit)
-    else:
-        result = result_limit(products, limit)  # daca nu se cauta dupa ceva anume, doar limitam rezultatele
-    result = sort_result(result, order_by, order, allowed_columns, api_errors)
+        products = get_json(key, mode)
+        if columns is not None:
+            columns.replace(" ", "")
 
-    if len(api_errors):  # daca am avut erori pe parcrusul executiei, le returnam
-        return jsonify(api_errors)
+        parsed_columns = parse_columns(columns, allowed_columns, api_errors)  # impunem coloanele in care se cauta
+        if search is not None:
+            result = search_in_json(products, search, parsed_columns, limit)
+        else:
+            result = result_limit(products, limit)  # daca nu se cauta dupa ceva anume, doar limitam rezultatele
+        result = sort_result(result, order_by, order, allowed_columns, api_errors)
 
-    if download > 0:  # daca se doreste descarcarea rezultatului
-        return Response(
-            jsonify(result).get_data(as_text=True),
-            mimetype="application/json",
-            headers={"Content-disposition": "attachment; filename=" + str(int(time.time())) + ".json"})
+        if len(api_errors):  # daca am avut erori pe parcrusul executiei, le returnam
+            return jsonify(api_errors)
+
+        if download > 0:  # daca se doreste descarcarea rezultatului
+            return Response(
+                jsonify(result).get_data(as_text=True),
+                mimetype="application/json",
+                headers={"Content-disposition": "attachment; filename=" + str(int(time.time())) + ".json"})
+    elif action == 'add':
+        if not use_key:
+            result.append({"error": 4, "description": "Trebuie să folosești o cheie de acces validă."})
+            return jsonify(result)
+
+        maker = request.args.get('maker', default=get_email_by_key(conn, key), type=str)
+        img = request.args.get('img', default=None, type=str)
+        url = request.args.get('url', default=None, type=str)
+        title = request.args.get('title', default=None, type=str)
+        description = request.args.get('description', default=None, type=str)
+        ratings = request.args.get('ratings', default=None, type=str)
+
+
 
     return jsonify(result)
 
@@ -132,7 +154,7 @@ def register():
         elif check_email(conn, email):  # verificam daca emailul a mai fost folosit
             alert = 'success'
             key = insert_user(conn, email)  # inseram key-ul si il si salvamm pentru a-l trimite prin email
-            create_json_file(key) # crearea propiului json
+            create_json_file(key)  # crearea propiului json
             msg = Message("Cheie de acces JsonAPI", sender=('JsonAPI', app.config['MAIL_DEFAULT_SENDER']),
                           recipients=[email])
             msg.html = "<p>Salut! Primești acest email pentru că ai cerut o cheie de acces pentru JsonAPI.<br>Cheia " \

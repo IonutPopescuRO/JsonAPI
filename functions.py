@@ -1,6 +1,7 @@
 import json
 import os
 import pathlib
+import re
 import sqlite3
 import random
 import string
@@ -9,12 +10,18 @@ from flask import request
 from flask_limiter.util import get_remote_address
 
 
-def get_json():
+def get_json(key, mode):
     data = []
     for path in pathlib.Path("db").rglob('*.json'):  # preluam recursiv fiecare fisier json din directorul /db
-        if path.is_file():
+        if path.is_file() and (not str(path).startswith("db\\users") or (
+                key is not None and mode and str(path).endswith(str(key) + ".json"))): # nu luam in considerare
+            # directorul /db, decat in cazul in care mode este 1 sau 2
+            if mode == 3 and not str(path).startswith("db\\users"): # daca modul selectat este 3, trecem mai departe
+                # daca fisierul nu este cel al cheii
+                continue
             with open(path) as json_file:
                 try:
+                    print(path)
                     new_data = json.load(json_file)
                     data.extend(new_data)
                 except ValueError as e:  # daca gasim fisier cu format json invalid
@@ -179,7 +186,28 @@ def get_key_by_email(conn, email):
     return record[0]
 
 
+def get_email_by_key(conn, key):
+    sql = 'SELECT email FROM users WHERE key = ? LIMIT 1'
+    cur = conn.cursor()
+    cur.execute(sql, (key,))
+    record = cur.fetchone()
+
+    return record[0]
+
+
 def create_json_file(key):
     users = pathlib.Path("db/users")
-    with open(os.path.join(users, key+'.json'), 'w') as outfile:
+    with open(os.path.join(users, key + '.json'), 'w') as outfile:
         json.dump([], outfile)
+
+
+def check_url(link):  # django url validation regex
+    # am extras functia din django, pentru a nu-l mai importa
+    regex = re.compile(
+        r'^(?:http|ftp)s?://'  # http:// sau https:// sau ftp
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domeniu
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...sau un ip
+        r'(?::\d+)?'  # port optional
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+
+    return re.match(regex, link) is not None
