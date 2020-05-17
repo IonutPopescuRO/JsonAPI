@@ -49,6 +49,9 @@
 										<div id="collapseListAPI" class="panel-collapse collapse" role="tabpanel" aria-labelledby="collapseListGroupHeadingAPI" aria-expanded="false" style="height: 0px;">
 											<ul class="list-group">
 												<li class="list-group-item">
+													<div class="alert alert-info" role="alert">API-ul public este limitat la 50 de accesări per oră pe o adresă IP.<br>Pentru a atince o limită de 500 de accesări pe oră, poți crea gratuit o cheie de acces <a href="/register" target="_blank">aici</a>.</div>
+												</li>
+												<li class="list-group-item">
 													<table class="table table-hover api-parameters">
 														<thead>
 															<tr>
@@ -245,6 +248,8 @@
 		<script>
 			$(document).ready(function() {
 				$("#test-form").submit(function(event){
+					if($('#collapseListAPI').is( ":visible" ))
+						$('#collapseListAPI').collapse('hide');
 					event.preventDefault();
 					var post_url = $(this).attr("action");
 					var request_method = $(this).attr("method");

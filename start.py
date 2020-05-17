@@ -60,6 +60,10 @@ def api():
     elif mode != 0:  # daca nu e folosit un key, ne asiguram ca mode este 0
         mode = 0
 
+    if mode not in [0, 1, 2]:
+        result.append({"error": 4, "description": "Modul de căutare nu există."})
+        return jsonify(result)
+
     if action not in ['search', 'add', 'delete']:  # verificam daca actiunea exista
         result.append({"error": 3, "description": "Acțiunea nu este validă."})
         return jsonify(result)
@@ -98,8 +102,6 @@ def api():
         title = request.args.get('title', default=None, type=str)
         description = request.args.get('description', default=None, type=str)
         ratings = request.args.get('ratings', default=None, type=str)
-
-
 
     return jsonify(result)
 

@@ -14,9 +14,9 @@ def get_json(key, mode):
     data = []
     for path in pathlib.Path("db").rglob('*.json'):  # preluam recursiv fiecare fisier json din directorul /db
         if path.is_file() and (not str(path).startswith("db\\users") or (
-                key is not None and mode and str(path).endswith(str(key) + ".json"))): # nu luam in considerare
+                key is not None and mode and str(path).endswith(str(key) + ".json"))):  # nu luam in considerare
             # directorul /db, decat in cazul in care mode este 1 sau 2
-            if mode == 3 and not str(path).startswith("db\\users"): # daca modul selectat este 3, trecem mai departe
+            if mode == 2 and not str(path).startswith("db\\users"):  # daca modul selectat este 3, trecem mai departe
                 # daca fisierul nu este cel al cheii
                 continue
             with open(path) as json_file:
