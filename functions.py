@@ -223,7 +223,7 @@ def isfloat(value):
         return False
 
 
-def insert_json(key, content):
+def insert_in_json(key, content):
     users = pathlib.Path("db/users")
     with open(os.path.join(users, key + '.json'), 'r+') as file:
         data = json.load(file)
@@ -233,3 +233,19 @@ def insert_json(key, content):
         json.dump(data, file)
 
     return content["id"]
+
+
+def delete_in_json(key, id):
+    users = pathlib.Path("db/users")
+    result = False
+    with open(os.path.join(users, key + '.json'), 'r') as file:
+        data = json.load(file)
+        count = len(data)
+        data = list(filter(lambda x: x['id'] != id, data))
+        if count > len(data):  # verificam daca s-a schimbat numarul elementelor
+            print(data)
+            result = True
+            with open(os.path.join(users, key + '.json'), 'w') as file:  # trebuie sa rescriem totul de la inceput
+                json.dump(data, file)  # salvam numai daca s-a gasit
+
+    return result

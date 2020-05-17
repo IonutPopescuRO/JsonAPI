@@ -126,9 +126,23 @@ def api():
                    "url": url,
                    "description": description,
                    "ratings": ratings}
-        new_id = insert_json(key, new_row)
+        new_id = insert_in_json(key, new_row)
 
         result = {"error": 0, "success": 1, "description": "Datele au fost inserate cu succes. ID: "+str(new_id)}
+    elif action == 'delete':
+        id = request.args.get('id', default=None, type=int)
+        if not use_key:
+            result.append({"error": 4, "description": "Trebuie să folosești o cheie de acces validă."})
+            return jsonify(result)
+        elif not id:
+            result.append({"error": 10, "description": "Variabila id este obligatorie."})
+            return jsonify(result)
+        x = delete_in_json(key, id)
+        if x:
+            result = {"error": 0, "success": 1, "description": "Înregistrarea cu id-ul "+str(id)+" a fost ștearsă."}
+        else:
+            result = {"error": 11, "description": "Nu există o înregistrare cu id-ul "+str(id)+"."}
+
 
     return jsonify(result)
 
