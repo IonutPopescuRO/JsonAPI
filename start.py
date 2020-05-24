@@ -137,7 +137,7 @@ def api():
         if not use_key:
             result.append({"error": 4, "description": "Trebuie să folosești o cheie de acces validă."})
             return jsonify(result)
-        elif not id:
+        elif not id and id != 0:
             result.append({"error": 10, "description": "Variabila id este obligatorie."})
             return jsonify(result)
         x = delete_in_json(key, id)
