@@ -5,6 +5,10 @@ Tema:
 
 > D1-T2 | Dezvoltare API.
 
+# Demo
+[![Watch the video](https://i.imgur.com/W2IZQEV.png)](https://www.youtube.com/watch?v=u4I5N_UIShA)
+
+
 # Cerinte minimale:
 
   - Utilizati fisierul de mai jos (sau unul similar):
